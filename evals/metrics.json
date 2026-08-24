@@ -1,0 +1,120 @@
+{
+  "dataset": {
+    "n_samples": 1000,
+    "overall_bust_rate": 0.632,
+    "lead_time_range_days": [
+      1,
+      10
+    ]
+  },
+  "metrics_summary": {
+    "uncalibrated": {
+      "brier_score": 0.1583,
+      "brier_skill_score": 0.3192,
+      "expected_calibration_error": 0.098
+    },
+    "calibrated": {
+      "brier_score": 0.1702,
+      "brier_skill_score": 0.2681,
+      "expected_calibration_error": 0.1144,
+      "roc_auc": 0.8454,
+      "pr_auc": 0.8807
+    },
+    "calibration_improvement": {
+      "brier_score_reduction_pct": -7.5,
+      "ece_reduction_pct": -16.7
+    }
+  },
+  "lead_time_breakdown": {
+    "Day 1\u20133 (Early)": {
+      "sample_count": 313,
+      "bust_rate": 0.2523961661341853,
+      "brier_score": 0.17941926631700145,
+      "brier_skill_score": 0.049143887168110245,
+      "ece": 0.061808482124148134,
+      "roc_auc": 0.6887915179054419
+    },
+    "Day 4\u20137 (Medium)": {
+      "sample_count": 410,
+      "bust_rate": 0.6926829268292682,
+      "brier_score": 0.23972380474050398,
+      "brier_skill_score": -0.1261337909925866,
+      "ece": 0.2045106421483378,
+      "roc_auc": 0.666680639391907
+    },
+    "Day 8\u201310 (Extended)": {
+      "sample_count": 277,
+      "bust_rate": 0.9711191335740073,
+      "brier_score": 0.05694581384577576,
+      "brier_skill_score": -1.0303881740578666,
+      "ece": 0.06542462453623998,
+      "roc_auc": 0.7156133828996283
+    }
+  },
+  "feature_importances": {
+    "ensemble_spread_z500": 0.4287,
+    "lead_time_days": 0.1099,
+    "rossby_wave_activity": 0.0527,
+    "zonal_wind_shear_250_850": 0.0491,
+    "blocking_metric": 0.0476,
+    "day_of_year_sin": 0.0474,
+    "ensemble_spread_t2m": 0.0457,
+    "teleconnection_nao": 0.0433,
+    "day_of_year_cos": 0.038,
+    "teleconnection_pna": 0.0323,
+    "latitude": 0.0315,
+    "ens_mean_det_diff_z500": 0.0251,
+    "climatological_temp_anomaly": 0.0246,
+    "longitude": 0.024
+  },
+  "reliability_curve": {
+    "bin_centers": [
+      0.05,
+      0.15,
+      0.25,
+      0.35,
+      0.45,
+      0.55,
+      0.65,
+      0.75,
+      0.85,
+      0.95
+    ],
+    "calibrated_observed_freq": [
+      0.098,
+      0.234,
+      0.25,
+      0.0,
+      0.6,
+      1.0,
+      0.65,
+      1.0,
+      0.875,
+      0.919
+    ],
+    "calibrated_mean_predicted": [
+      0.006,
+      0.164,
+      0.25,
+      0.328,
+      0.43,
+      0.556,
+      0.65,
+      0.748,
+      0.837,
+      0.982
+    ],
+    "bin_counts": [
+      92,
+      111,
+      0,
+      2,
+      420,
+      5,
+      0,
+      4,
+      8,
+      358
+    ]
+  }
+}
