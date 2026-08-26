@@ -1,6 +1,6 @@
 # ⚡ BustWatch (`bustwatch`) — Medium-Range NWP Forecast Bust Detection & Confidence Mapping System
 
-[![CI](https://github.com/bustwatch/bustwatch/actions/workflows/ci.yml/badge.svg)](https://github.com/bustwatch/bustwatch/actions/workflows/ci.yml)
+[![CI](https://github.com/aditya0si/bustwatch/actions/workflows/ci.yml/badge.svg)](https://github.com/aditya0si/bustwatch/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
