@@ -1,21 +1,23 @@
 """Evaluation metrics, reliability curves, and historical bust case studies API routes."""
 
 from __future__ import annotations
+
+import asyncio
 import json
-from pathlib import Path
-from typing import Dict, List, Any
-from datetime import datetime
-from fastapi import APIRouter, HTTPException
+from datetime import datetime, timezone
+from typing import Any
+
+from fastapi import APIRouter
 
 from bustwatch.config import settings
 from bustwatch.data.schemas import BustRecord
 
 router = APIRouter(prefix="/evals", tags=["Model Verification & Evals"])
 
-HISTORICAL_BUSTS: List[BustRecord] = [
+HISTORICAL_BUSTS: list[BustRecord] = [
     BustRecord(
         event_id="bust_2021_texas_freeze",
-        date=datetime(2021, 2, 13, 0, 0),
+        date=datetime(2021, 2, 13, 0, 0, tzinfo=timezone.utc),
         lead_time_days=7,
         location_name="Texas / Southern Plains, USA",
         latitude=31.9686,
@@ -27,7 +29,7 @@ HISTORICAL_BUSTS: List[BustRecord] = [
     ),
     BustRecord(
         event_id="bust_2022_uk_heatwave",
-        date=datetime(2022, 7, 15, 0, 0),
+        date=datetime(2022, 7, 15, 0, 0, tzinfo=timezone.utc),
         lead_time_days=6,
         location_name="London / Southeast England, UK",
         latitude=51.5074,
@@ -39,7 +41,7 @@ HISTORICAL_BUSTS: List[BustRecord] = [
     ),
     BustRecord(
         event_id="bust_2024_california_ar",
-        date=datetime(2024, 2, 4, 0, 0),
+        date=datetime(2024, 2, 4, 0, 0, tzinfo=timezone.utc),
         lead_time_days=5,
         location_name="Sierra Nevada / Central California, USA",
         latitude=36.7783,
@@ -53,19 +55,20 @@ HISTORICAL_BUSTS: List[BustRecord] = [
 
 
 @router.get("/metrics")
-async def get_eval_metrics() -> Dict[str, Any]:
+async def get_eval_metrics() -> dict[str, Any]:
     """Retrieve verified evaluation metrics, Brier scores, ECE, and reliability curve coordinates."""
     metrics_path = settings.evals_dir / "metrics.json"
-    if metrics_path.exists():
-        with open(metrics_path, "r") as f:
-            return json.load(f)
+    if await asyncio.to_thread(metrics_path.exists):
+        # Offload the blocking file read to a worker thread (async handler).
+        payload = await asyncio.to_thread(metrics_path.read_text, encoding="utf-8")
+        return json.loads(payload)
 
     # If file does not exist, compute lightweight verification on demand
     from evals.evaluate_models import run_evaluations
     return run_evaluations(n_samples=300)
 
 
-@router.get("/historical-busts", response_model=List[BustRecord])
+@router.get("/historical-busts", response_model=list[BustRecord])
 async def list_historical_busts():
     """Retrieve catalog of benchmark historical NWP forecast bust case studies."""
     return HISTORICAL_BUSTS

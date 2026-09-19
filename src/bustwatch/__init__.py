@@ -5,4 +5,4 @@ __author__ = "BustWatch Team"
 
 from bustwatch.config import settings
 
-__all__ = ["settings", "__version__"]
+__all__ = ["__version__", "settings"]

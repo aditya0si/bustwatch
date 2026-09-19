@@ -1,15 +1,21 @@
 """Spatio-Temporal Confidence Map Renderer for Days 1–10 NWP Forecasts."""
 
 from __future__ import annotations
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Any
-import numpy as np
+
+from datetime import datetime, timezone
+from typing import Any
+
 import geojson
+import numpy as np
 
 from bustwatch.config import settings
-from bustwatch.data.schemas import SpatialBoundingBox, GridPoint, LeadTimeForecast, BustPredictionOutput
-from bustwatch.data.synthetic import generate_spatial_grid_forecast, generate_synthetic_grid_point
 from bustwatch.data.features import extract_atmospheric_features
+from bustwatch.data.schemas import (
+    GridPoint,
+    LeadTimeForecast,
+    SpatialBoundingBox,
+)
+from bustwatch.data.synthetic import generate_spatial_grid_forecast, generate_synthetic_grid_point
 from bustwatch.models.bust_classifier import ForecastBustClassifier
 from bustwatch.models.error_regressor import QuantileErrorRegressor
 
@@ -44,8 +50,8 @@ class ConfidenceMapRenderer:
 
     def __init__(
         self,
-        classifier: Optional[ForecastBustClassifier] = None,
-        regressor: Optional[QuantileErrorRegressor] = None,
+        classifier: ForecastBustClassifier | None = None,
+        regressor: QuantileErrorRegressor | None = None,
     ):
         self.classifier = classifier
         self.regressor = regressor
@@ -53,10 +59,10 @@ class ConfidenceMapRenderer:
     def render_grid_raster(
         self,
         lead_time_days: int = 5,
-        bbox: Optional[SpatialBoundingBox] = None,
+        bbox: SpatialBoundingBox | None = None,
         resolution_deg: float = 2.0,
         seed: int = 42,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate gridded 2D rasters for bust probability, confidence score, and expected error.
         """
@@ -72,8 +78,8 @@ class ConfidenceMapRenderer:
         grid = grid_data["grid"]
 
         # Flatten grid points for batch inference
-        points_flat: List[GridPoint] = []
-        feature_rows: List[np.ndarray] = []
+        points_flat: list[GridPoint] = []
+        feature_rows: list[np.ndarray] = []
 
         for row in grid:
             for pt_dict in row:
@@ -145,10 +151,10 @@ class ConfidenceMapRenderer:
     def render_geojson_contours(
         self,
         lead_time_days: int = 5,
-        bbox: Optional[SpatialBoundingBox] = None,
+        bbox: SpatialBoundingBox | None = None,
         resolution_deg: float = 2.0,
         seed: int = 42,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate GeoJSON FeatureCollection of spatial grid polygons colored by bust risk.
         """
@@ -206,17 +212,17 @@ class ConfidenceMapRenderer:
         self,
         latitude: float,
         longitude: float,
-        init_time: Optional[datetime] = None,
+        init_time: datetime | None = None,
     ) -> LeadTimeForecast:
         """Compute full Day 1 to 10 forecast risk trajectory for a specific location."""
         if init_time is None:
-            init_time = datetime.now()
+            init_time = datetime.now(timezone.utc)
 
         days = list(range(1, settings.lead_time_days_max + 1))
-        probs: List[float] = []
-        confs: List[float] = []
-        errors: List[float] = []
-        risks: List[str] = []
+        probs: list[float] = []
+        confs: list[float] = []
+        errors: list[float] = []
+        risks: list[str] = []
 
         for d in days:
             pt = generate_synthetic_grid_point(latitude, longitude, lead_time_days=d, seed=int(latitude * 10 + d))

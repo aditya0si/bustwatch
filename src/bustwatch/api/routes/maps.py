@@ -1,11 +1,11 @@
 """Spatial 2D Confidence Grid and GeoJSON map routes."""
 
 from __future__ import annotations
-from typing import Dict, Any, Optional
-from fastapi import APIRouter, Request, Query
-from pydantic import BaseModel, Field
 
-from bustwatch.config import settings
+from typing import Any
+
+from fastapi import APIRouter, Query, Request
+
 from bustwatch.data.schemas import SpatialBoundingBox
 from bustwatch.renderer.confidence_map import ConfidenceMapRenderer
 
@@ -21,7 +21,7 @@ async def get_confidence_grid(
     lon_min: float = Query(default=-125.0, ge=-180.0, le=180.0),
     lon_max: float = Query(default=-65.0, ge=-180.0, le=180.0),
     resolution_deg: float = Query(default=2.0, ge=0.5, le=5.0),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Retrieve dense 2D rasters of calibrated bust probability, confidence score, and expected error.
     """
@@ -55,7 +55,7 @@ async def get_geojson_layer(
     lon_min: float = Query(default=-125.0, ge=-180.0, le=180.0),
     lon_max: float = Query(default=-65.0, ge=-180.0, le=180.0),
     resolution_deg: float = Query(default=2.5, ge=0.5, le=5.0),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Retrieve GeoJSON FeatureCollection containing colored risk polygon cells for mapping.
     """

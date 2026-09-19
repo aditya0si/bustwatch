@@ -1,8 +1,7 @@
 """Unit and integration tests for evals benchmark suite."""
 
-import pytest
 import json
-from pathlib import Path
+
 from evals.evaluate_models import run_evaluations
 
 

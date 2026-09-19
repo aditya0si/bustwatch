@@ -1,38 +1,38 @@
 """Comprehensive Evaluation & Reliability Verification Benchmark Suite for BustWatch."""
 
 from __future__ import annotations
-import os
-import json
+
 import argparse
+import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Any
-import numpy as np
-import pandas as pd
+from typing import Any
+
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_auc_score, average_precision_score, brier_score_loss
+from sklearn.metrics import average_precision_score, roc_auc_score
 
-from bustwatch.config import settings
-from bustwatch.data.synthetic import generate_synthetic_dataset
-from bustwatch.data.features import FEATURE_COLUMNS, compute_bust_labels
-from bustwatch.models.bust_classifier import ForecastBustClassifier
-from bustwatch.models.error_regressor import QuantileErrorRegressor
 from bustwatch.calibration.calibrator import (
     compute_brier_score,
     compute_brier_skill_score,
     compute_expected_calibration_error,
     compute_reliability_curve,
 )
+from bustwatch.config import settings
+from bustwatch.data.features import FEATURE_COLUMNS, compute_bust_labels
+from bustwatch.data.synthetic import generate_synthetic_dataset
+from bustwatch.models.bust_classifier import ForecastBustClassifier
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
 
 def generate_reliability_plot(
-    reliability_uncal: Dict[str, Any],
-    reliability_cal: Dict[str, Any],
+    reliability_uncal: dict[str, Any],
+    reliability_cal: dict[str, Any],
     output_path: Path,
 ) -> None:
     """Generate professional reliability diagram with bin count subplots."""
@@ -108,7 +108,7 @@ def run_evaluations(
     model_dir: Path = settings.model_dir,
     output_dir: Path = settings.evals_dir,
     random_seed: int = 999,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Execute end-to-end evaluation benchmark across test dataset."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -150,7 +150,7 @@ def run_evaluations(
     eval_df["raw_prob"] = raw_probs
     eval_df["cal_prob"] = cal_probs
 
-    lead_time_breakdown: Dict[str, Dict[str, float]] = {}
+    lead_time_breakdown: dict[str, dict[str, float]] = {}
     for regime, (d_start, d_end) in [
         ("Day 1–3 (Early)", (1, 3)),
         ("Day 4–7 (Medium)", (4, 7)),
@@ -161,7 +161,7 @@ def run_evaluations(
             sub_y = subset["is_bust"].values
             sub_p = subset["cal_prob"].values
             lead_time_breakdown[regime] = {
-                "sample_count": int(len(subset)),
+                "sample_count": len(subset),
                 "bust_rate": float(np.mean(sub_y)),
                 "brier_score": float(compute_brier_score(sub_p, sub_y)),
                 "brier_skill_score": float(compute_brier_skill_score(sub_p, sub_y)),
@@ -223,7 +223,7 @@ def run_evaluations(
     return metrics_payload
 
 
-def _print_metrics_summary(metrics: Dict[str, Any]) -> None:
+def _print_metrics_summary(metrics: dict[str, Any]) -> None:
     """Print ASCII verification table to stdout."""
     ms = metrics["metrics_summary"]
     print("\n" + "=" * 68)

@@ -1,8 +1,10 @@
 """Probability calibration (Isotonic / Platt) and reliability verification metrics."""
 
 from __future__ import annotations
+
 import logging
-from typing import Dict, List, Tuple, Any, Literal, Union
+from typing import Any, Literal
+
 import numpy as np
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression
@@ -26,7 +28,7 @@ class ProbabilityCalibrator:
         else:
             raise ValueError(f"Unknown calibration method: {method}. Must be 'isotonic' or 'sigmoid'.")
 
-    def fit(self, y_prob: Union[np.ndarray, List[float]], y_true: Union[np.ndarray, List[int]]) -> ProbabilityCalibrator:
+    def fit(self, y_prob: np.ndarray | list[float], y_true: np.ndarray | list[int]) -> ProbabilityCalibrator:
         """Fit calibrator on validation probabilities and true binary outcomes."""
         probs = np.asarray(y_prob, dtype=np.float64).ravel()
         labels = np.asarray(y_true, dtype=int).ravel()
@@ -42,7 +44,7 @@ class ProbabilityCalibrator:
         self.is_fitted = True
         return self
 
-    def transform(self, y_prob: Union[np.ndarray, List[float]]) -> np.ndarray:
+    def transform(self, y_prob: np.ndarray | list[float]) -> np.ndarray:
         """Transform uncalibrated probabilities to calibrated probabilities in [0, 1]."""
         probs = np.asarray(y_prob, dtype=np.float64).ravel()
         if not self.is_fitted:
@@ -56,7 +58,7 @@ class ProbabilityCalibrator:
         return np.clip(calibrated, 0.0, 1.0)
 
 
-def compute_brier_score(y_prob: Union[np.ndarray, List[float]], y_true: Union[np.ndarray, List[int]]) -> float:
+def compute_brier_score(y_prob: np.ndarray | list[float], y_true: np.ndarray | list[int]) -> float:
     """
     Calculate Mean Squared Probability Error (Brier Score).
     BS = (1/N) * sum((p_i - y_i)^2)
@@ -70,9 +72,9 @@ def compute_brier_score(y_prob: Union[np.ndarray, List[float]], y_true: Union[np
 
 
 def compute_brier_skill_score(
-    y_prob: Union[np.ndarray, List[float]],
-    y_true: Union[np.ndarray, List[int]],
-    y_ref_prob: Union[np.ndarray, List[float], None] = None,
+    y_prob: np.ndarray | list[float],
+    y_true: np.ndarray | list[int],
+    y_ref_prob: np.ndarray | list[float] | None = None,
 ) -> float:
     """
     Compute Brier Skill Score (BSS) relative to a reference climatology baseline.
@@ -98,8 +100,8 @@ def compute_brier_skill_score(
 
 
 def compute_expected_calibration_error(
-    y_prob: Union[np.ndarray, List[float]],
-    y_true: Union[np.ndarray, List[int]],
+    y_prob: np.ndarray | list[float],
+    y_true: np.ndarray | list[int],
     n_bins: int = 10,
 ) -> float:
     """
@@ -132,23 +134,22 @@ def compute_expected_calibration_error(
 
 
 def compute_reliability_curve(
-    y_prob: Union[np.ndarray, List[float]],
-    y_true: Union[np.ndarray, List[int]],
+    y_prob: np.ndarray | list[float],
+    y_true: np.ndarray | list[int],
     n_bins: int = 10,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Compute bin statistics for reliability diagrams (calibration curve).
     Returns bin centers, mean predicted probability, observed fraction, and counts.
     """
     probs = np.asarray(y_prob, dtype=np.float64).ravel()
     labels = np.asarray(y_true, dtype=int).ravel()
-    n_total = len(probs)
 
     bin_edges = np.linspace(0.0, 1.0, n_bins + 1)
-    bin_centers: List[float] = []
-    mean_predicted_probs: List[float] = []
-    fraction_positives: List[float] = []
-    bin_counts: List[int] = []
+    bin_centers: list[float] = []
+    mean_predicted_probs: list[float] = []
+    fraction_positives: list[float] = []
+    bin_counts: list[int] = []
 
     for i in range(n_bins):
         bin_lower, bin_upper = bin_edges[i], bin_edges[i + 1]

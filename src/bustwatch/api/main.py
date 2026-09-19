@@ -1,19 +1,19 @@
 """Main FastAPI Application for BustWatch."""
 
 from __future__ import annotations
-import time
-import logging
-from contextlib import asynccontextmanager
-from pathlib import Path
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
+import logging
+import time
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from bustwatch.api.routes import evals, forecast, maps
 from bustwatch.config import settings
 from bustwatch.models.bust_classifier import ForecastBustClassifier
 from bustwatch.models.error_regressor import QuantileErrorRegressor
 from bustwatch.renderer.confidence_map import ConfidenceMapRenderer
-from bustwatch.api.routes import forecast, maps, evals
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)

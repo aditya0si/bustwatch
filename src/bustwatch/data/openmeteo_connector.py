@@ -1,9 +1,10 @@
 """Open-Meteo Ensemble & Historical Forecast API Connector."""
 
 from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 import numpy as np
 import requests
 
@@ -28,8 +29,8 @@ class OpenMeteoConnector:
         self,
         latitude: float,
         longitude: float,
-        models: List[str] = None,
-    ) -> Optional[Dict[str, Any]]:
+        models: list[str] | None = None,
+    ) -> dict[str, Any] | None:
         """Fetch multi-member ensemble forecast for a coordinate from Open-Meteo API."""
         if models is None:
             models = ["gfs_seamless", "ecmwf_ifs025"]
@@ -50,7 +51,7 @@ class OpenMeteoConnector:
                 return data
             logger.warning(f"Open-Meteo API returned status code {resp.status_code}")
             return None
-        except Exception as exc:
+        except requests.RequestException as exc:
             logger.warning(f"Open-Meteo request failed ({exc}); using fallback")
             return None
 

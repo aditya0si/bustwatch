@@ -1,6 +1,5 @@
 """Unit tests for calibration algorithms and verification metrics."""
 
-import pytest
 import numpy as np
 
 from bustwatch.calibration.calibrator import (

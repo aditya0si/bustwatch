@@ -1,22 +1,23 @@
 """Physically consistent synthetic meteorological error & forecast generator for BustWatch."""
 
 from __future__ import annotations
-import math
-from datetime import datetime, timedelta
-from typing import List, Optional, Tuple, Dict, Any
+
+from datetime import datetime, timedelta, timezone
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
 from bustwatch.config import settings
-from bustwatch.data.schemas import GridPoint, ForecastObservationPair, SpatialBoundingBox
-from bustwatch.data.features import compute_seasonal_harmonics, FEATURE_COLUMNS
+from bustwatch.data.features import compute_seasonal_harmonics
+from bustwatch.data.schemas import GridPoint, SpatialBoundingBox
 
 
 def generate_synthetic_grid_point(
     latitude: float,
     longitude: float,
     lead_time_days: int = 5,
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ) -> GridPoint:
     """Generate a single physically consistent synthetic meteorological grid point."""
     if seed is not None:
@@ -66,8 +67,8 @@ def generate_synthetic_dataset(
     """
     rng = np.random.default_rng(random_seed)
 
-    base_time = datetime(2025, 1, 1, 0, 0)
-    records: List[Dict[str, Any]] = []
+    base_time = datetime(2025, 1, 1, 0, 0, tzinfo=timezone.utc)
+    records: list[dict[str, Any]] = []
 
     for i in range(n_samples):
         # Sample lead time (1 to 10 days)
@@ -173,10 +174,10 @@ def generate_synthetic_dataset(
 
 def generate_spatial_grid_forecast(
     lead_time_days: int = 5,
-    bbox: Optional[SpatialBoundingBox] = None,
+    bbox: SpatialBoundingBox | None = None,
     resolution_deg: float = 2.0,
     seed: int = 42,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Generate a 2D spatial raster grid of forecast states and ensemble characteristics.
     """
