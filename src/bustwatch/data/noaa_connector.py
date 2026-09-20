@@ -1,9 +1,10 @@
 """NOAA AWS Open Data connector for GFS/GEFS forecast and reanalysis datasets."""
 
 from __future__ import annotations
+
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+
 import requests
 
 from bustwatch.config import settings
@@ -38,7 +39,7 @@ class NOAADataConnector:
         """Construct S3 HTTP URL for the GRIB2 byte-range index (.idx) file."""
         return f"{self.build_gfs_url(init_time, forecast_hour)}.idx"
 
-    def fetch_index(self, init_time: datetime, forecast_hour: int) -> Optional[List[str]]:
+    def fetch_index(self, init_time: datetime, forecast_hour: int) -> list[str] | None:
         """Fetch and parse NOAA GRIB2 index file to locate byte offsets for Z500/T2M."""
         idx_url = self.build_index_url(init_time, forecast_hour)
         try:
@@ -49,7 +50,7 @@ class NOAADataConnector:
                 return lines
             logger.warning(f"NOAA index fetch returned status {resp.status_code}")
             return None
-        except Exception as exc:
+        except requests.RequestException as exc:
             logger.warning(f"Unable to reach NOAA AWS S3 endpoint ({exc}); fallback available")
             return None
 
@@ -59,12 +60,12 @@ class NOAADataConnector:
         end_date: datetime,
         lat: float = 40.0,
         lon: float = -95.0,
-    ) -> List[ForecastObservationPair]:
+    ) -> list[ForecastObservationPair]:
         """
         Fetch forecast-observation pairs for a range of dates.
         Falls back to synthetic physical simulation when offline.
         """
-        pairs: List[ForecastObservationPair] = []
+        pairs: list[ForecastObservationPair] = []
         curr = start_date
         while curr <= end_date:
             # Check availability or fallback

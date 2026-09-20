@@ -1,13 +1,14 @@
 """Gradient Boosted Decision Tree Classifier for Medium-Range Forecast Busts."""
 
 from __future__ import annotations
-import os
+
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Any
+
+import joblib
 import numpy as np
 import pandas as pd
-import joblib
 
 try:
     import lightgbm as lgb
@@ -16,9 +17,9 @@ except ImportError:
     HAS_LIGHTGBM = False
 from sklearn.ensemble import HistGradientBoostingClassifier
 
-from bustwatch.config import settings
-from bustwatch.data.features import FEATURE_COLUMNS, extract_atmospheric_features
 from bustwatch.calibration.calibrator import ProbabilityCalibrator
+from bustwatch.config import settings
+from bustwatch.data.features import FEATURE_COLUMNS
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +75,8 @@ class ForecastBustClassifier:
 
     def fit(
         self,
-        X: Union[np.ndarray, pd.DataFrame],
-        y: Union[np.ndarray, pd.Series],
+        X: np.ndarray | pd.DataFrame,
+        y: np.ndarray | pd.Series,
         val_split: float = 0.2,
     ) -> ForecastBustClassifier:
         """
@@ -114,7 +115,7 @@ class ForecastBustClassifier:
         logger.info(f"Fitted {self.__class__.__name__} on {len(X_train)} samples with {self.calibration_method} calibration.")
         return self
 
-    def predict_proba_raw(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+    def predict_proba_raw(self, X: np.ndarray | pd.DataFrame) -> np.ndarray:
         """Get uncalibrated probabilities from base model."""
         if not self.is_fitted:
             raise RuntimeError("Model must be fitted before predict_proba_raw.")
@@ -127,17 +128,17 @@ class ForecastBustClassifier:
 
         return self.model.predict_proba(X_mat)[:, 1]
 
-    def predict_proba(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+    def predict_proba(self, X: np.ndarray | pd.DataFrame) -> np.ndarray:
         """Get calibrated bust probabilities."""
         raw_probs = self.predict_proba_raw(X)
         return self.calibrator.transform(raw_probs)
 
-    def predict(self, X: Union[np.ndarray, pd.DataFrame], threshold: float = 0.5) -> np.ndarray:
+    def predict(self, X: np.ndarray | pd.DataFrame, threshold: float = 0.5) -> np.ndarray:
         """Binary prediction using calibrated probability threshold."""
         probs = self.predict_proba(X)
         return (probs >= threshold).astype(int)
 
-    def get_feature_importances(self) -> Dict[str, float]:
+    def get_feature_importances(self) -> dict[str, float]:
         """Return normalized feature importance dictionary."""
         if not self.is_fitted:
             return {f: 1.0 / len(self.feature_names) for f in self.feature_names}
@@ -156,7 +157,7 @@ class ForecastBustClassifier:
             for name, imp in zip(self.feature_names, importances)
         }
 
-    def save(self, filepath: Union[str, Path]) -> None:
+    def save(self, filepath: str | Path) -> None:
         """Serialize model and calibrator state to disk."""
         path = Path(filepath)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -174,7 +175,7 @@ class ForecastBustClassifier:
         logger.info(f"Model saved to {path}")
 
     @classmethod
-    def load(cls, filepath: Union[str, Path]) -> ForecastBustClassifier:
+    def load(cls, filepath: str | Path) -> ForecastBustClassifier:
         """Load serialized model artifact."""
         path = Path(filepath)
         if not path.exists():

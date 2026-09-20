@@ -1,8 +1,9 @@
 """Pydantic schemas and dataclasses for meteorological forecast and observation records."""
 
 from __future__ import annotations
+
 from datetime import datetime
-from typing import List, Optional, Dict, Any, Tuple
+
 from pydantic import BaseModel, Field
 
 
@@ -90,9 +91,9 @@ class BustPredictionOutput(BaseModel):
     confidence_score: float = Field(ge=0.0, le=1.0, description="1.0 - calibrated_bust_probability")
     expected_error_z500_m: float
     expected_error_t2m_c: float
-    confidence_interval_z500_90: Tuple[float, float]
+    confidence_interval_z500_90: tuple[float, float]
     risk_level: str  # "LOW", "MODERATE", "ELEVATED", "CRITICAL_BUST"
-    contributing_factors: Dict[str, float]
+    contributing_factors: dict[str, float]
 
 
 class LeadTimeForecast(BaseModel):
@@ -100,11 +101,11 @@ class LeadTimeForecast(BaseModel):
     latitude: float
     longitude: float
     init_time: datetime
-    days: List[int]
-    bust_probabilities: List[float]
-    confidence_scores: List[float]
-    expected_errors_z500: List[float]
-    risk_levels: List[str]
+    days: list[int]
+    bust_probabilities: list[float]
+    confidence_scores: list[float]
+    expected_errors_z500: list[float]
+    risk_levels: list[str]
 
 
 class BustRecord(BaseModel):

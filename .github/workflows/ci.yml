@@ -29,7 +29,6 @@ jobs:
 
       - name: Run linting
         run: |
-          pip install ruff
           ruff check src/ tests/ evals/
 
       - name: Run evaluations script

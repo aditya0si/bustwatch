@@ -1,34 +1,34 @@
 """Unit tests for meteorological data structures, feature extraction, and connectors."""
 
-import pytest
+from datetime import datetime, timezone
+
 import numpy as np
 import pandas as pd
-from datetime import datetime
 
-from bustwatch.data.schemas import (
-    GridPoint,
-    ForecastObservationPair,
-    SpatialBoundingBox,
-)
 from bustwatch.data.features import (
-    compute_seasonal_harmonics,
-    compute_blocking_index,
-    extract_atmospheric_features,
-    compute_bust_labels,
     FEATURE_COLUMNS,
-)
-from bustwatch.data.synthetic import (
-    generate_synthetic_grid_point,
-    generate_synthetic_dataset,
-    generate_spatial_grid_forecast,
+    compute_blocking_index,
+    compute_bust_labels,
+    compute_seasonal_harmonics,
+    extract_atmospheric_features,
 )
 from bustwatch.data.noaa_connector import NOAADataConnector
 from bustwatch.data.openmeteo_connector import OpenMeteoConnector
+from bustwatch.data.schemas import (
+    ForecastObservationPair,
+    GridPoint,
+    SpatialBoundingBox,
+)
+from bustwatch.data.synthetic import (
+    generate_spatial_grid_forecast,
+    generate_synthetic_dataset,
+    generate_synthetic_grid_point,
+)
 
 
 def test_seasonal_harmonics():
     """Verify seasonal sinusoidal cyclical encoding."""
-    dt_summer = datetime(2025, 6, 21)
+    dt_summer = datetime(2025, 6, 21, tzinfo=timezone.utc)
     sin_val, cos_val = compute_seasonal_harmonics(dt_summer)
     assert -1.0 <= sin_val <= 1.0
     assert -1.0 <= cos_val <= 1.0
@@ -80,8 +80,8 @@ def test_extract_atmospheric_features_record():
     """Verify feature vector extraction from ForecastObservationPair."""
     pair = ForecastObservationPair(
         record_id="rec_001",
-        forecast_init_time=datetime(2025, 1, 1),
-        valid_time=datetime(2025, 1, 6),
+        forecast_init_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
+        valid_time=datetime(2025, 1, 6, tzinfo=timezone.utc),
         lead_time_days=5,
         latitude=40.0,
         longitude=-90.0,
@@ -116,7 +116,7 @@ def test_spatial_grid_forecast():
 def test_noaa_connector_urls():
     """Verify NOAA AWS S3 URL generator."""
     conn = NOAADataConnector()
-    init_time = datetime(2025, 5, 10, 12, 0)
+    init_time = datetime(2025, 5, 10, 12, 0, tzinfo=timezone.utc)
     url = conn.build_gfs_url(init_time, forecast_hour=120)
     assert "gfs.20250510/12/atmos/gfs.t12z.pgrb2.0p25.f120" in url
     idx_url = conn.build_index_url(init_time, forecast_hour=120)

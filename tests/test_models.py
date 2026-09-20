@@ -1,12 +1,11 @@
 """Unit tests for ML models (ForecastBustClassifier and QuantileErrorRegressor)."""
 
-import pytest
-import numpy as np
-import pandas as pd
-from pathlib import Path
 
-from bustwatch.data.synthetic import generate_synthetic_dataset
+import numpy as np
+import pytest
+
 from bustwatch.data.features import FEATURE_COLUMNS, compute_bust_labels
+from bustwatch.data.synthetic import generate_synthetic_dataset
 from bustwatch.models.bust_classifier import ForecastBustClassifier
 from bustwatch.models.error_regressor import QuantileErrorRegressor
 

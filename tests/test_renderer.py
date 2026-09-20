@@ -1,15 +1,11 @@
 """Unit tests for ConfidenceMapRenderer and geospatial raster/vector outputs."""
 
-import pytest
-import geojson
 
 from bustwatch.data.schemas import SpatialBoundingBox
-from bustwatch.models.bust_classifier import ForecastBustClassifier
-from bustwatch.models.error_regressor import QuantileErrorRegressor
 from bustwatch.renderer.confidence_map import (
     ConfidenceMapRenderer,
-    get_risk_level,
     get_risk_color,
+    get_risk_level,
 )
 
 

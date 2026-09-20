@@ -1,25 +1,25 @@
 """Forecast bust prediction and lead-time trajectory API routes."""
 
 from __future__ import annotations
-from datetime import datetime
-from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Request, HTTPException, Query
-from pydantic import BaseModel, Field
-import numpy as np
 
+from datetime import datetime, timezone
+
+import numpy as np
+from fastapi import APIRouter, Query, Request
+from pydantic import BaseModel, Field
+
+from bustwatch.data.features import extract_atmospheric_features
 from bustwatch.data.schemas import (
     BustPredictionOutput,
     LeadTimeForecast,
     StationMetadata,
-    ForecastObservationPair,
 )
-from bustwatch.data.features import extract_atmospheric_features
 from bustwatch.renderer.confidence_map import get_risk_level
 
 router = APIRouter(prefix="/forecast", tags=["Forecast Bust Detection"])
 
 
-SAMPLE_STATIONS: List[StationMetadata] = [
+SAMPLE_STATIONS: list[StationMetadata] = [
     StationMetadata(station_id="KORD", name="Chicago O'Hare, IL", latitude=41.9742, longitude=-87.9073, elevation_m=204.0, climate_zone="humid_continental"),
     StationMetadata(station_id="KDEN", name="Denver International, CO", latitude=39.8561, longitude=-104.6737, elevation_m=1656.0, climate_zone="semi_arid_leeward"),
     StationMetadata(station_id="KJFK", name="New York JFK, NY", latitude=40.6413, longitude=-73.7781, elevation_m=4.0, climate_zone="coastal_maritime"),
@@ -46,7 +46,7 @@ class PredictBustRequest(BaseModel):
     climatological_temp_anomaly: float = Field(default=1.5, description="Temperature anomaly vs climatology (°C)")
 
 
-@router.get("/stations", response_model=List[StationMetadata])
+@router.get("/stations", response_model=list[StationMetadata])
 async def list_sample_stations():
     """Retrieve curated list of reference meteorological verification stations."""
     return SAMPLE_STATIONS
@@ -61,7 +61,7 @@ async def predict_bust_risk(request: Request, payload: PredictBustRequest):
     regressor = getattr(request.app.state, "regressor", None)
 
     # Seasonal harmonics for current date
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     doy = now.timetuple().tm_yday
     doy_rad = (2.0 * np.pi * (doy - 1)) / 365.25
 

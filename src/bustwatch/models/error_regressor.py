@@ -1,12 +1,14 @@
 """Quantile Regression Model for NWP Forecast Error Bounds."""
 
 from __future__ import annotations
+
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Any
+
+import joblib
 import numpy as np
 import pandas as pd
-import joblib
 
 try:
     import lightgbm as lgb
@@ -28,7 +30,7 @@ class QuantileErrorRegressor:
 
     def __init__(
         self,
-        quantiles: Tuple[float, float, float] = (0.10, 0.50, 0.90),
+        quantiles: tuple[float, float, float] = (0.10, 0.50, 0.90),
         random_state: int = settings.random_seed,
         use_lightgbm: bool = HAS_LIGHTGBM,
         n_estimators: int = 100,
@@ -40,8 +42,8 @@ class QuantileErrorRegressor:
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
 
-        self.models_z500: Dict[float, Any] = {}
-        self.models_t2m: Dict[float, Any] = {}
+        self.models_z500: dict[float, Any] = {}
+        self.models_t2m: dict[float, Any] = {}
         self.feature_names = list(FEATURE_COLUMNS)
         self.is_fitted = False
 
@@ -85,9 +87,9 @@ class QuantileErrorRegressor:
 
     def fit(
         self,
-        X: Union[np.ndarray, pd.DataFrame],
-        y_z500_error: Union[np.ndarray, pd.Series],
-        y_t2m_error: Union[np.ndarray, pd.Series],
+        X: np.ndarray | pd.DataFrame,
+        y_z500_error: np.ndarray | pd.Series,
+        y_t2m_error: np.ndarray | pd.Series,
     ) -> QuantileErrorRegressor:
         """Fit quantile regressors for Z500 error and T2M error."""
         if isinstance(X, pd.DataFrame):
@@ -107,8 +109,8 @@ class QuantileErrorRegressor:
         return self
 
     def predict_error_quantiles(
-        self, X: Union[np.ndarray, pd.DataFrame]
-    ) -> Dict[str, Dict[float, np.ndarray]]:
+        self, X: np.ndarray | pd.DataFrame
+    ) -> dict[str, dict[float, np.ndarray]]:
         """Predict error quantiles for Z500 and T2M."""
         if not self.is_fitted:
             raise RuntimeError("Regressor must be fitted before predict_error_quantiles.")
@@ -125,7 +127,7 @@ class QuantileErrorRegressor:
 
         return {"z500_error_m": res_z500, "t2m_error_c": res_t2m}
 
-    def save(self, filepath: Union[str, Path]) -> None:
+    def save(self, filepath: str | Path) -> None:
         """Serialize regressor state to disk."""
         path = Path(filepath)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -143,7 +145,7 @@ class QuantileErrorRegressor:
         logger.info(f"QuantileErrorRegressor saved to {path}")
 
     @classmethod
-    def load(cls, filepath: Union[str, Path]) -> QuantileErrorRegressor:
+    def load(cls, filepath: str | Path) -> QuantileErrorRegressor:
         """Load serialized regressor artifact."""
         path = Path(filepath)
         if not path.exists():

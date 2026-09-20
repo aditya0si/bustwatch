@@ -1,15 +1,16 @@
 """Atmospheric feature extraction and bust label computation."""
 
 from __future__ import annotations
+
 import math
 from datetime import datetime
-from typing import Dict, List, Any, Union
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
 from bustwatch.config import settings
-from bustwatch.data.schemas import AtmosphericFeatures, ForecastObservationPair
-
+from bustwatch.data.schemas import ForecastObservationPair
 
 FEATURE_COLUMNS = [
     "lead_time_days",
@@ -40,18 +41,20 @@ def compute_blocking_index(
     z500_north: float, z500_mid: float, z500_south: float, delta_lat_deg: float = 20.0
 ) -> float:
     """
-    Compute Tibaldi-Molteni style geopotential height gradient index (GHGS proxy).
-    GHGS = (Z(lat_mid) - Z(lat_south)) / delta_lat
-    A negative or strongly reversed gradient indicates upper-level atmospheric blocking.
+    Compute a Tibaldi-Molteni style geopotential height gradient index (GHGS proxy).
+
+    Returns the mid-latitude ridge anomaly relative to the mean of the northern and
+    southern reference heights: (Z(mid) - (Z(north) + Z(south)) / 2) / 10.0.
+    A positive value indicates an anticyclonic ridge / blocking signature.
+    `delta_lat_deg` is retained in the signature for callers that express the
+    gradient formulation; the returned value is unchanged.
     """
-    ghgs = (z500_mid - z500_south) / delta_lat_deg
-    ghgn = (z500_north - z500_mid) / delta_lat_deg
     # Positive index signifies anticyclonic ridge / blocking signature
     return float((z500_mid - (z500_north + z500_south) / 2.0) / 10.0)
 
 
 def extract_atmospheric_features(
-    record: Union[ForecastObservationPair, Dict[str, Any], pd.Series]
+    record: ForecastObservationPair | dict[str, Any] | pd.Series
 ) -> np.ndarray:
     """Extract ordered 1D numpy array of atmospheric features from record."""
     if isinstance(record, ForecastObservationPair):
